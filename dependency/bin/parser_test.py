@@ -26,15 +26,17 @@ def highlight_string(temp):
     print 80 * "="
 
 class ParserLoader(object):
-    def __init__(self, ckpt_path):
+    def __init__(self, ckpt_path, word, pos):
         self.sess = tf.Session()
         self.ckpt_path = ckpt_path
+        self.list_word = word
+        self.list_pos = pos
 
         highlight_string("INITIALIZING")
         print "loading data.."
       
-        self.list_word = [u"世界", u"第", u"八", u"大", u"奇迹", u"出现"]
-        self.list_pos = [u"n",u"m",u"m",u"a",u"n",u"v"]
+        #self.list_word = [u"世界", u"第", u"八", u"大", u"奇迹", u"出现"]
+        #self.list_pos = [u"n",u"m",u"m",u"a",u"n",u"v"]
 
         self.dataset = load_datasets(self.list_word, self.list_pos, False, True)
         self.config = self.dataset.model_config
@@ -59,8 +61,8 @@ class ParserLoader(object):
         highlight_string("Testing.....")         
         model.compute_dependencies(self.sess, dataset.test_data, dataset)
         test_UAS,test_LAS, token_num, token_dep = model.get_UAS(dataset.test_data)
-        self.print_conll(token_num, token_dep)
-        return test_UAS, test_LAS
+        #self.print_conll(token_num, token_dep)
+        return test_UAS, test_LAS, token_num, token_dep
     
     def print_conll(self, token_num, token_dep):
         for i in range(len(self.list_word)):
@@ -72,8 +74,12 @@ class ParserLoader(object):
 
 
 def main():
-    paraser = ParserLoader(ckpt_path)
-    paraser.predict(paraser.model, paraser.dataset)
+
+    word = [u"世界", u"第", u"八", u"大", u"奇迹", u"出现"]
+    pos = [u"n",u"m",u"m",u"a",u"n",u"v"]
+    parser = ParserLoader(ckpt_path, word, pos)
+    UAS, LAS, token_num, token_dep =  parser.predict(parser.model, parser.dataset)
+    parser.print_conll(token_num, token_dep)
 
 if __name__ == '__main__':
     main()
