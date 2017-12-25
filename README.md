@@ -36,5 +36,5 @@ git clone https://github.com/Pelhans/ZNLP
 训练与测试模型见各个文件夹中的README.md，调用模型参考pipeline文件。
 
 ## 其他
-接下来应该会先做关键词提取，同时有可能会更新些语音识别相关的东西。。。<br>
+改关键词提取的过程中深刻感受到分词等基础对高层任务的影响，改进算法，任重道远啊<br>
 如有问题，可以发邮件联系我:p.zhang1992@gmail.com
