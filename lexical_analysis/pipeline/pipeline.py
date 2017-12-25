@@ -11,17 +11,21 @@ import tensorflow as tf
 from tensorflow.contrib import rnn
 from sklearn.model_selection import train_test_split
 
-sys.path.append(r'../cws_blstm/bin/') 
-sys.path.append(r'../ner_blstm/bin/') 
-sys.path.append(r'../pos_blstm/bin/') 
+path = os.path.split(os.path.realpath(__file__))[0]
+sys.path.append(path + r'/../../lexical_analysis/cws_blstm/bin/') 
+sys.path.append(path + r'/../../lexical_analysis/ner_blstm/bin/') 
+sys.path.append(path + r'/../../lexical_analysis/pos_blstm/bin/') 
 
+#sys.path.append(r'../cws_blstm/bin/') 
+#sys.path.append(r'../ner_blstm/bin/') 
+#sys.path.append(r'../pos_blstm/bin/') 
 import cws_test as ct
 import ner_test as nt
 import pos_test as pt
 
-cws_path = '../cws_blstm/'
-ner_path = '../ner_blstm/'
-pos_path = '../pos_blstm/'
+cws_path = path + '/../../lexical_analysis/cws_blstm/'
+ner_path = path + '/../../lexical_analysis/ner_blstm/'
+pos_path = path + '/../../lexical_analysis/pos_blstm/'
 
 class Pipeline(object):
     def __init__(self):

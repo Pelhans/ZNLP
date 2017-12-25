@@ -2,10 +2,12 @@
 # coding=utf-8
 
 import pickle
+import os
 
-cws_path = '../cws_blstm/'
-ner_path = '../ner_blstm/'
-pos_path = '../pos_blstm/'
+path = os.path.split(os.path.realpath(__file__))[0] +'/'
+cws_path = path + '../cws_blstm/'
+ner_path = path + '../ner_blstm/'
+pos_path = path + '../pos_blstm/'
 
 def get_pickle():
     with open(cws_path + 'data/data.pkl', 'rb') as inpc:

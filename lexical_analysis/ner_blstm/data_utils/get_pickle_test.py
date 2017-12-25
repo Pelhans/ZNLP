@@ -92,7 +92,7 @@ id2tag_test = pd.Series(tags, index = tag_ids)
 vocab_size = len(set_words)
 print 'vocab_size={}'.format(vocab_size)
 
-max_len = 16
+max_len = 50
 def X_padding(words):
     #把words转为id形式，并自动补全为max_len长度
     ids = list(word2id_test[words])

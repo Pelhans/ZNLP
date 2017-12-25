@@ -168,7 +168,7 @@ class config_ch():
     decay = 0.85
     max_epoch = 5
     max_max_epoch = 10
-    timestep_size = max_len = 32
+    timestep_size = max_len = 200
     vocab_size = 5159
     input_size = embedding_size = 64
     class_num = 5
@@ -221,7 +221,7 @@ def main():
         print 'Finished creating the bi-lstm model.'
     
         sess.run(tf.global_variables_initializer())
-        tr_batch_size = 128 
+        tr_batch_size = 200
         max_max_epoch = 6
         display_num = 5  # 每个 epoch 显示是个结果
         tr_batch_num = int(data_train.y.shape[0] / tr_batch_size)  # 每个 epoch 中包含的 batch 数

@@ -79,9 +79,10 @@ def viterbi(nodes, zy):
 def text2ids(text, word2id):
     """把字片段text转为 ids."""
     words = list(text)
-    ids = list(word2id[words])
+    ids = list(word2id[word] if word in word2id.index else word2id["UNK"] for word in words)
+    #ids = list(word2id[words])
     if len(ids) >= config.max_len:  # 长则弃掉
-        print u'输出片段超过%d部分无法处理' % (config.max_len) 
+        print u'cws 输出片段超过%d部分无法处理' % (config.max_len) 
         return ids[:config.max_len]
     ids.extend([0]*(config.max_len-len(ids))) # 短则补全
     ids = np.asarray(ids).reshape([-1, config.max_len])
@@ -178,7 +179,8 @@ def main():
 
 #    sentence = u'人们思考问题往往不是从零开始的。就好像你现在阅读这篇文章一样，你对每个词的理解都会依赖于你前面看到的一些词，\
 #      而不是把你前面看的内容全部抛弃了，忘记了，再去理解这个单词。也就是说，人们的思维总是会有延续性的。'
-    sentence = u'我爱吃北京烤鸭。'
+    #sentence = u'我爱吃北京烤鸭。'
+    sentence = u'他直言：“我没有参加台湾婚礼，所以这次觉得蛮开心。”'
     result = cut_word(sentence ,word2id ,model, zy)
     rss = ''
     for each in result:

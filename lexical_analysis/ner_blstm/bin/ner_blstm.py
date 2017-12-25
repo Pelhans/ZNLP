@@ -168,7 +168,7 @@ class config_ch():
     decay = 0.85
     max_epoch = 5
     max_max_epoch = 6
-    timestep_size = max_len = 16
+    timestep_size = max_len = 50
     vocab_size = 100000
     input_size = embedding_size = 128
     class_num = 5

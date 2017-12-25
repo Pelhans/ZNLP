@@ -89,7 +89,7 @@ id2tag = pd.Series(tags, index = tag_ids)
 vocab_size = len(set_words)
 print 'vocab_size={}'.format(vocab_size)
 
-max_len = 16
+max_len = 50
 def X_padding(words):
     #把words转为id形式，并自动补全为max_len长度
     ids = list(word2id[words])
@@ -110,7 +110,7 @@ start = time.clock()
 df_data['X'] = df_data['words'].apply(X_padding)
 df_data['y'] = df_data['tags'].apply(y_padding)
 end = time.clock()
-print end-start
+print end-start, " s"
 
 X = np.asarray(list(df_data['X'].values))
 y = np.asarray(list(df_data['y'].values))

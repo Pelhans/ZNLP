@@ -68,6 +68,7 @@ df_data.head(2)
 
 #使用 chain(*list)函数把多个list拼接起来
 all_words = list(chain(*df_data['words'].values))
+all_words.append(u'UNK')
 
 #统计所有word
 sr_allwords = pd.Series(all_words)
@@ -85,7 +86,7 @@ id2tag = pd.Series(tags, index = tag_ids)
 vocab_size = len(set_words)
 print 'vocab_size={}'.format(vocab_size)
 
-max_len = 32
+max_len = 200
 def X_padding(words):
     #把words转为id形式，并自动补全为max_len长度
     ids = list(word2id[words])

@@ -51,7 +51,7 @@ def text2ids(sentence, word2id):
     words = re.split(" ", sentence)
     ids = list(word2id[word] if word in word2id.index else word2id["UNK"] for word in words)
     if len(ids) >= config.max_len:  # 长则弃掉
-        print u'输出片段超过%d部分无法处理' % (config.max_len) 
+        print u'ner 输出片段超过%d部分无法处理' % (config.max_len) 
         return ids[:config.max_len]
     ids.extend([0]*(config.max_len-len(ids))) # 短则补全
     ids = np.asarray(ids).reshape([-1, config.max_len])
