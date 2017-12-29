@@ -13,13 +13,20 @@ except:
 
 import codecs
 
-path = os.path.split(os.path.realpath(__file__))
-path_pip = os.path.split(os.path.realpath(__file__))[0]
-sys.path.append(path_pip + r'/../pipeline')
-import pipeline, get_pickle                                                                           
-              
-pic = get_pickle.get_pickle()  
-pipe = pipeline.Pipeline()
+# Choice use_jieba or not
+global use_jieba
+use_jieba = True
+
+if not use_jieba:
+    path = os.path.split(os.path.realpath(__file__))
+    path_pip = os.path.split(os.path.realpath(__file__))[0]
+    sys.path.append(path_pip + r'/../pipeline')
+    import pipeline, get_pickle                                                                                     
+    pic = get_pickle.get_pickle()  
+    pipe = pipeline.Pipeline()
+else:
+    pic = [1, 2, 3, 4, 5, 6, 7]
+    pipe = 1
 
 import TextRank4Keyword, TextRank4Sentence
 

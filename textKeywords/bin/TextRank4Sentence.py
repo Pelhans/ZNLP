@@ -53,7 +53,7 @@ class TextRank4Sentence(object):
         
         self.key_sentences = []
         
-        result = self.seg.segment(pic, pipe, text=text, lower=lower)
+        result = self.seg.segment(pic, pipe, text=text, lower=lower,use_jieba = True)
         self.sentences = result.sentences
         self.words_no_filter = result.words_no_filter
         self.words_no_stop_words = result.words_no_stop_words

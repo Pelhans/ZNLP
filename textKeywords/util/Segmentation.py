@@ -76,7 +76,7 @@ class WordSegmentation(object):
 
         return word_list
         
-    def segment_sentences(self, pic, pipe, sentences, lower=True, use_stop_words=True, use_speech_tags_filter=False):
+    def segment_sentences(self, pic, pipe, sentences, lower=True, use_stop_words=True, use_speech_tags_filter=False, use_jieba = False ):
         """将列表sequences中的每个元素/句子转换为由单词构成的列表。
         
         sequences -- 列表，每个元素是一个句子（字符串类型）
@@ -87,7 +87,8 @@ class WordSegmentation(object):
             res.append(self.segment(pic, pipe, text=sentence, 
                                     lower=lower, 
                                     use_stop_words=use_stop_words, 
-                                    use_speech_tags_filter=use_speech_tags_filter))
+                                    use_speech_tags_filter=use_speech_tags_filter, 
+                                    use_jieba = use_jieba ))
         return res
         
 class SentenceSegmentation(object):
@@ -126,22 +127,25 @@ class Segmentation(object):
         self.ws = WordSegmentation(stop_words_file=stop_words_file, allow_speech_tags=allow_speech_tags)
         self.ss = SentenceSegmentation(delimiters=delimiters)
         
-    def segment(self, pic, pipe, text, lower = False ):
+    def segment(self, pic, pipe, text, lower = False, use_jieba = False):
         text = util.as_text(text)
         sentences = self.ss.segment(text) # Sentences is a sentence with end delimiters .
         words_no_filter = self.ws.segment_sentences(pic, pipe, sentences=sentences, 
                                                     lower = lower, 
                                                     use_stop_words = False,
-                                                    use_speech_tags_filter = False)
+                                                    use_speech_tags_filter = False,
+                                                    use_jieba = use_jieba )
         words_no_stop_words = self.ws.segment_sentences(pic, pipe, sentences=sentences, 
                                                     lower = lower, 
                                                     use_stop_words = True,
-                                                    use_speech_tags_filter = False)
+                                                    use_speech_tags_filter = False,
+                                                    use_jieba = use_jieba )
 
         words_all_filters = self.ws.segment_sentences(pic, pipe, sentences=sentences, 
                                                     lower = lower, 
                                                     use_stop_words = True,
-                                                    use_speech_tags_filter = True)
+                                                    use_speech_tags_filter = True,
+                                                    use_jieba = use_jieba )
 
         return util.AttrDict(
                     sentences           = sentences, 
