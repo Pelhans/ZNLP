@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #dependency
-mv ../../data/dependency/*.pkl ../dependency/data/pkl/
+#mv ../../data/dependency/*.pkl ../dependency/data/pkl/
 
 #cws
 mv ../../data/cws_blstm/ckpt/ ../lexical_analysis/cws_blstm/
