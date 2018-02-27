@@ -1,7 +1,6 @@
 @author pelhans<br>
 data:14/11/2017<br>
 
-参考 https://github.com/yongyehuang/Tensorflow-Tutorial/blob/master/Tutorial_6%20-%20Bi-directional%20LSTM%20for%20sequence%20labeling%20(Chinese%20segmentation).ipynb 进行修改，整合后完成
 
 系统要求:<br>
 tensorflow>= 1.3(更低版本的没试过，不过高于1.0的应该就可以)<br>

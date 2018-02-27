@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import re
-import time
+import time, sys
 import glob
 import pickle
 import numpy as np
@@ -101,7 +101,7 @@ def simple_cut(text, word2id, model, zy):
         tags = viterbi(nodes, zy)
         words = []
         for i in range(len(text)):
-            if tags[i] in ['s', 'b']:
+            if tags[i] in ['s', 'n']:
                 words.append(text[i])
             else:
                 words[-1] += text[i]
@@ -116,6 +116,7 @@ def cut_word(sentence, word2id, model, zy):
     result = []
     start = 0
     for seg_sign in not_cuts.finditer(sentence):
+        print sentence[start:seg_sign.start()]
         result.extend(simple_cut(sentence[start:seg_sign.start()], word2id, model, zy))
         result.append(sentence[seg_sign.start():seg_sign.end()])
         start = seg_sign.end()
@@ -163,16 +164,13 @@ def main():
     ckpt_path = '../ckpt/bi-lstm.ckpt-6'
     model = ModelLoader(ckpt_path)
 
-    with open('../data/data.pkl', 'rb') as inp:
-        X = pickle.load(inp)
-        y = pickle.load(inp)
-        ltags = pickle.load(inp)
+    with open('../data/word2id.pkl', 'rb') as inp:
         word2id = pickle.load(inp)
-        id2word = pickle.load(inp)
-        tag2id = pickle.load(inp)
-        id2tag = pickle.load(inp)
+        if sys.argv[1] == "getzy":
+            ltags = pickle.load(inp)
 
-#    get_zy(ltags)  #这行用来生成转移概率的pkl文件，一次生成后就可以注释掉了
+    if sys.argv[1] == "getzy":
+        get_zy(ltags)  #这行用来生成转移概率的pkl文件，一次生成后就可以注释掉了
     
     with open('../data/zy.pkl', 'rb') as inp:
         zy = pickle.load(inp)
@@ -180,12 +178,14 @@ def main():
 #    sentence = u'人们思考问题往往不是从零开始的。就好像你现在阅读这篇文章一样，你对每个词的理解都会依赖于你前面看到的一些词，\
 #      而不是把你前面看的内容全部抛弃了，忘记了，再去理解这个单词。也就是说，人们的思维总是会有延续性的。'
     #sentence = u'我爱吃北京烤鸭。'
-    sentence = u'他直言：“我没有参加台湾婚礼，所以这次觉得蛮开心。”'
+    start = time.clock()
+    sentence = u'他直言：“我没有参加台湾婚礼"'#'，所以这次觉得蛮开心。”'
     result = cut_word(sentence ,word2id ,model, zy)
     rss = ''
     for each in result:
         rss = rss + each + ' / '
     print rss
+    print time.clock() - start, "s"
 
 if __name__ == '__main__':
     main()
