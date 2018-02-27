@@ -89,27 +89,33 @@ def text2ids(text, word2id):
     return ids
 
 
-def simple_cut(text, word2id, model, zy):
+def simple_cut(text, word2id, model, zy, len_sen):
     """对一个片段text（标点符号把句子划分为多个片段）进行预测。"""
     if text:
         text_len = len(text)
-        X_batch = text2ids(text, word2id)  # 这里每个 batch 是一个样本
+        print "Tht numners of total sentence is: ", text_len
+        #X_batch = text2ids(text, word2id)  # 这里每个 batch 是一个样本
+        X_batch = np.squeeze(text, axis=(1,)) 
         fetches = [model.y_pred]
-        feed_dict = {model.X_inputs:X_batch, config.lr:1.0, config.batch_size:1, config.keep_prob:1.0}
-        _y_pred = model.session.run(fetches, feed_dict)[0][:text_len]  # padding填充的部分直接丢弃
-        nodes = [dict(zip(['s','b','m','e'], each[1:])) for each in _y_pred]
-        tags = viterbi(nodes, zy)
+        feed_dict = {model.X_inputs:X_batch, config.lr:1.0, config.batch_size:len(text), config.keep_prob:1.0}
+        #_y_pred = model.session.run(fetches, feed_dict)[0][:text_len]  # padding填充的部分直接丢弃
+        _y_pred = model.session.run(fetches, feed_dict)  # padding填充的部分直接丢弃
+        print "_y_pred: ", _y_pred
         words = []
-        tmp = []
-        for i in range(len(text)):
-            if tags[i] in ['s', 'n']:
-                words.append(text[i])
-            else:
-                tmp.extend(text[i])
-                if tags[i] == 'e':
-                    words.append(tmp)
-                    tmp = []
-        return words
+        for i, tag_eachsen in _y_pred:
+            tag = tag_eachsen[0][:len_sen]
+            nodes = [dict(zip(['s','b','m','e'], each[1:])) for each in tag]
+            tags = viterbi(nodes, zy)
+            tmp = []
+            for i in range(len(text)):
+                if tags[i] in ['s', 'n']:
+                    words.append(text[i])
+                else:
+                    tmp.extend(text[i])
+                    if tags[i] == 'e':
+                        words.append(tmp)
+                        tmp = []
+            return words
     else:
         return []
 
@@ -118,12 +124,15 @@ def cut_word(sentence, word2id, model, zy):
     """首先将一个sentence根据标点和英文符号/字符串划分成多个片段text，然后对每一个片段分词。"""
     not_cuts = re.compile(u'([0-9\da-zA-Z ]+)|[。，、？！.\.\?,!]')
     result = []
-    sentences = []
+    sen_part = []
+    len_sen = []
     start = 0
     for seg_sign in not_cuts.finditer(sentence):
-        result.extend(simple_cut(sentence[start:seg_sign.start()], word2id, model, zy))
-        result.append(sentence[seg_sign.start():seg_sign.end()])
+        sen_part.append(text2ids(sentence[start:seg_sign.start()+1], word2id))
         start = seg_sign.end()
+        len_sen.append(len(sentence[start:seg_sign.start()+1]))
+    result.extend(simple_cut(sen_part, word2id, model, zy, len(sentence[start:seg_sign.start()+1])))
+        #result.append(sentence[seg_sign.start():seg_sign.end()])
     return result
 
 def get_zy(ltags):
