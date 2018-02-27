@@ -100,11 +100,15 @@ def simple_cut(text, word2id, model, zy):
         nodes = [dict(zip(['s','b','m','e'], each[1:])) for each in _y_pred]
         tags = viterbi(nodes, zy)
         words = []
+        tmp = []
         for i in range(len(text)):
             if tags[i] in ['s', 'n']:
                 words.append(text[i])
             else:
-                words[-1] += text[i]
+                tmp.extend(text[i])
+                if tags[i] == 'e':
+                    words.append(tmp)
+                    tmp = []
         return words
     else:
         return []
@@ -114,13 +118,12 @@ def cut_word(sentence, word2id, model, zy):
     """首先将一个sentence根据标点和英文符号/字符串划分成多个片段text，然后对每一个片段分词。"""
     not_cuts = re.compile(u'([0-9\da-zA-Z ]+)|[。，、？！.\.\?,!]')
     result = []
+    sentences = []
     start = 0
     for seg_sign in not_cuts.finditer(sentence):
-        print sentence[start:seg_sign.start()]
         result.extend(simple_cut(sentence[start:seg_sign.start()], word2id, model, zy))
         result.append(sentence[seg_sign.start():seg_sign.end()])
         start = seg_sign.end()
-    result.extend(simple_cut(sentence[start:], word2id, model, zy))
     return result
 
 def get_zy(ltags):
@@ -175,14 +178,16 @@ def main():
     with open('../data/zy.pkl', 'rb') as inp:
         zy = pickle.load(inp)
 
-#    sentence = u'人们思考问题往往不是从零开始的。就好像你现在阅读这篇文章一样，你对每个词的理解都会依赖于你前面看到的一些词，\
-#      而不是把你前面看的内容全部抛弃了，忘记了，再去理解这个单词。也就是说，人们的思维总是会有延续性的。'
+    sentence = u'人们思考问题往往不是从零开始的。就好像你现在阅读这篇文章一样，你对每个词的理解都会依赖于你前面看到的一些词，\
+      而不是把你前面看的内容全部抛弃了，忘记了，再去理解这个单词。也就是说，人们的思维总是会有延续性的。'
     #sentence = u'我爱吃北京烤鸭。'
     start = time.clock()
-    sentence = u'他直言：“我没有参加台湾婚礼"'#'，所以这次觉得蛮开心。”'
+    #sentence = u'他直言：“我没有参加台湾婚礼，所以这次觉得蛮开心。”'
     result = cut_word(sentence ,word2id ,model, zy)
     rss = ''
     for each in result:
+        if isinstance(each, list):
+            each = "".join(each)
         rss = rss + each + ' / '
     print rss
     print time.clock() - start, "s"
