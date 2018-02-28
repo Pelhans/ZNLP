@@ -11,7 +11,21 @@ import tensorflow as tf
 import cws_blstm as cb
 from sklearn.model_selection import train_test_split
 
+"""
+Please use the command like "python cws_test.py 512 not_get_zy".
+batch_size control the nums of sentences you process in one batch and not_get_zy/get_zy means not/generate zy.pkl(transition possibiy file).
+"""
+
+
 config = cb.config_ch()
+batch_size = 128
+wget_zy = 'not_get_zy'
+if len(sys.argv) == 1:
+    print "Using default config. batch_size = 128 and not_get_zy."
+elif len(sys.argv) == 3:
+    batch_size = sys.argv[1]
+    wget_zy = sys.argv[2]
+
 class ModelLoader(object):
     def __init__(self,ckpt_path):
         self.session = tf.Session()
@@ -29,18 +43,6 @@ class ModelLoader(object):
         else:
             print 'Model not found, creat with fresh parameters....'
             self.session.run(tf.global_variables_initializer())
-
-#    def _init_cws_model(self, session, ckpt_path):
-#        batch_size = 1
-#        model = cb.bi_lstm(self.X_inputs, self.y_inputs, embedding)
-#        if len(glob.glob(self.ckpt_path + 'bi-lstm-6*')) > 0:
-#            print 'Loading model parameters from %s ' % ckpt_path
-#            all_vars = tf.global_variables()
-#            tf.train.Saver(all_vars).restore(session, ckpt_path)
-#        else:
-#            print 'Model not found, creat with fresh parameters....'
-#            session.run(tf.global_variables_initializer())
-#        return model
 
 def viterbi(nodes, zy):
     """
@@ -80,7 +82,6 @@ def text2ids(text, word2id):
     """把字片段text转为 ids."""
     words = list(text)
     ids = list(word2id[word] if word in word2id.index else word2id["UNK"] for word in words)
-    #ids = list(word2id[words])
     if len(ids) >= config.max_len:  # 长则弃掉
         print u'cws 输出片段超过%d部分无法处理' % (config.max_len) 
         return ids[:config.max_len]
@@ -89,50 +90,57 @@ def text2ids(text, word2id):
     return ids
 
 
-def simple_cut(text, word2id, model, zy, len_sen):
+def simple_cut(text, sen_words, word2id, model, zy, len_sen):
     """对一个片段text（标点符号把句子划分为多个片段）进行预测。"""
     if text:
         text_len = len(text)
-        print "Tht numners of total sentence is: ", text_len
-        #X_batch = text2ids(text, word2id)  # 这里每个 batch 是一个样本
-        X_batch = np.squeeze(text, axis=(1,)) 
+        X_batch = np.squeeze(text, axis=(1,))
         fetches = [model.y_pred]
         feed_dict = {model.X_inputs:X_batch, config.lr:1.0, config.batch_size:len(text), config.keep_prob:1.0}
-        #_y_pred = model.session.run(fetches, feed_dict)[0][:text_len]  # padding填充的部分直接丢弃
-        _y_pred = model.session.run(fetches, feed_dict)  # padding填充的部分直接丢弃
-        print "_y_pred: ", _y_pred
+        _y_pred = model.session.run(fetches, feed_dict)
+        _y_pred = np.squeeze(_y_pred, axis=(0,))
+        y_pred = []
+        for i in range(text_len):
+            y_pred.append(_y_pred[i*config.max_len:i*config.max_len + len_sen[i]]) # remove padding
         words = []
-        for i, tag_eachsen in _y_pred:
-            tag = tag_eachsen[0][:len_sen]
-            nodes = [dict(zip(['s','b','m','e'], each[1:])) for each in tag]
+        for i, tag_eachsen in enumerate(y_pred):
+            nodes = [dict(zip(['s','b','m','e'], each[1:])) for each in tag_eachsen]
             tags = viterbi(nodes, zy)
             tmp = []
-            for i in range(len(text)):
-                if tags[i] in ['s', 'n']:
-                    words.append(text[i])
+            for j in range(len_sen[i]):
+                if tags[j] in ['s', 'n']:
+                    words.append(sen_words[i][j])
                 else:
-                    tmp.extend(text[i])
-                    if tags[i] == 'e':
+                    tmp.extend(sen_words[i][j])
+                    if tags[j] == 'e':
                         words.append(tmp)
                         tmp = []
-            return words
+        return words
     else:
         return []
 
 
-def cut_word(sentence, word2id, model, zy):
+def cut_word(sentence, word2id, model, zy, batch_size):
     """首先将一个sentence根据标点和英文符号/字符串划分成多个片段text，然后对每一个片段分词。"""
     not_cuts = re.compile(u'([0-9\da-zA-Z ]+)|[。，、？！.\.\?,!]')
     result = []
-    sen_part = []
+    sen_part_ids = []
+    sen_part_words = []
     len_sen = []
     start = 0
     for seg_sign in not_cuts.finditer(sentence):
-        sen_part.append(text2ids(sentence[start:seg_sign.start()+1], word2id))
+        sen_part_ids.append(text2ids(sentence[start:seg_sign.end()], word2id))
+        sen_part_words.append(sentence[start:seg_sign.end()])
+        len_sen.append(len(sentence[start:seg_sign.end()]))
         start = seg_sign.end()
-        len_sen.append(len(sentence[start:seg_sign.start()+1]))
-    result.extend(simple_cut(sen_part, word2id, model, zy, len(sentence[start:seg_sign.start()+1])))
-        #result.append(sentence[seg_sign.start():seg_sign.end()])
+    total_sen_num = len(sen_part_ids)
+    print "total_sen_num: ", total_sen_num
+    if total_sen_num > batch_size:
+        for i in range(total_sen_num/batch_size):
+            result.extend(simple_cut(sen_part_ids[i*batch_size:(i+1)*batch_size], sen_part_words[i*batch_size:(i+1)*batch_size], word2id, model, zy, len_sen[i*batch_size:(i+1)*batch_size]))
+        result.extend(simple_cut(sen_part_ids[-total_sen_num%batch_size:], sen_part_words[-total_sen_num%batch_size:], word2id, model, zy, len_sen[-total_sen_num%batch_size:]))
+    else:
+        result.extend(simple_cut(sen_part_ids, sen_part_words, word2id, model, zy, len_sen))
     return result
 
 def get_zy(ltags):
@@ -172,16 +180,25 @@ def get_zy(ltags):
     end_time = time.clock()
     print start_time - end_time
 
+def show_result(result):
+    rss = ''
+    for each in result:
+        if isinstance(each, list):
+            each = "".join(each)
+        rss = rss + each + ' / '
+    print rss
+
+
 def main():
     ckpt_path = '../ckpt/bi-lstm.ckpt-6'
     model = ModelLoader(ckpt_path)
 
     with open('../data/word2id.pkl', 'rb') as inp:
         word2id = pickle.load(inp)
-        if sys.argv[1] == "getzy":
+        if wget_zy == "get_zy":
             ltags = pickle.load(inp)
 
-    if sys.argv[1] == "getzy":
+    if wget_zy == "get_zy":
         get_zy(ltags)  #这行用来生成转移概率的pkl文件，一次生成后就可以注释掉了
     
     with open('../data/zy.pkl', 'rb') as inp:
@@ -189,16 +206,9 @@ def main():
 
     sentence = u'人们思考问题往往不是从零开始的。就好像你现在阅读这篇文章一样，你对每个词的理解都会依赖于你前面看到的一些词，\
       而不是把你前面看的内容全部抛弃了，忘记了，再去理解这个单词。也就是说，人们的思维总是会有延续性的。'
-    #sentence = u'我爱吃北京烤鸭。'
     start = time.clock()
-    #sentence = u'他直言：“我没有参加台湾婚礼，所以这次觉得蛮开心。”'
-    result = cut_word(sentence ,word2id ,model, zy)
-    rss = ''
-    for each in result:
-        if isinstance(each, list):
-            each = "".join(each)
-        rss = rss + each + ' / '
-    print rss
+    result = cut_word(sentence ,word2id ,model, zy, batch_size)
+    show_result(result)
     print time.clock() - start, "s"
 
 if __name__ == '__main__':
