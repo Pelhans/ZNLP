@@ -11,14 +11,11 @@ import pickle
 from tqdm import tqdm
 from itertools import chain
 
-DIR=os.getcwd()
+file = "train_pos.txt" if len(sys.argv)==1 else sys.argv[1]
 
-if not os.path.exists('../data/'):
-    os.makedirs('../data/')
-
-with open("../data/msr_train.txt", "rb") as inp:
-    texts = inp.read().decode('gbk')
-sentences = texts.split('\r\n') #根据换行符对文本进行切分
+with open("../data/" + str(file), "rb") as inp:
+    texts = inp.read().decode('utf-8')
+sentences = texts.split('\n') #根据换行符对文本进行切分
 
 def clean(s): #将句子中如开头和中间无匹配的引号去掉
     if u'“/s' not in s:
@@ -36,18 +33,19 @@ texts = u''.join(map(clean, sentences))
 print 'Length of text is %d' % len(texts)
 print 'Example of texts: \n', texts[:300]
 
-sentences = re.split(u'[，。！？、‘’“”]/[bems]', texts)
-print 'Sentences number:', len(sentences)
-print 'Sentence Example: \n', sentences[1]
-
 def get_Xy(sentence):
     #将sentences处理成[word],[tag]的形式
-    word_tags = re.findall('(.)/(.)',sentence)
-    if word_tags:
-        word_tags = np.asarray(word_tags)
-        words = word_tags[:, 0]
-        tags = word_tags[:, 1]
-        return words, tags
+    new_word = []
+    new_tag = []
+    words = re.split("\s+", sentence)
+    if words:
+        for word in words:
+            pairs = word.split("/")
+            if len(pairs) == 2:
+                if (len(pairs[0].strip())!=0 and len(pairs[1].strip())!=0):
+                    new_word.append(pairs[0])
+                    new_tag.append(pairs[1])
+        return new_word, new_tag
     return None
 
 datas = list()
@@ -69,13 +67,18 @@ df_data.head(2)
 #使用 chain(*list)函数把多个list拼接起来
 all_words = list(chain(*df_data['words'].values))
 all_words.append(u'UNK')
+print all_words[0:10]
 
 #统计所有word
 sr_allwords = pd.Series(all_words)
 sr_allwords = sr_allwords.value_counts()
 set_words = sr_allwords.index
 set_ids = range(1, len(set_words) + 1)
-tags = ['x', 's', 'b', 'm', 'e']
+#tags = ['nz', 'nt', 'ns', 'nr', 'nan']
+tags = ['Ag', 'a', 'ad', 'an', 'Bg', "b", "c", "Dg", "d", "e", "f",
+        "g", "h", "i", "j", "k", "l", "Mg", "m", "ns", "nt", "nx",
+        "nz", "o", "p", "Og", "q", "Rg", "r", "s", "Tg", "t", "Ug",
+        "u", "Vg", "v", "vd", "vn", "w", "x", "Yg", "y", "z", "nr", "n", "Ng"]
 tag_ids = range(len(tags))
 
 #构建words 和 tags都转为id的映射
@@ -107,10 +110,11 @@ start = time.clock()
 df_data['X'] = df_data['words'].apply(X_padding)
 df_data['y'] = df_data['tags'].apply(y_padding)
 end = time.clock()
-print end-start
+print end-start, " s"
 
 X = np.asarray(list(df_data['X'].values))
 y = np.asarray(list(df_data['y'].values))
+
 print 'X.shape={}, y.shape={}'.format(X.shape, y.shape)
 print 'Example of words: ', df_data['words'].values[0]
 print 'Example of X: ', X[0]
@@ -118,33 +122,33 @@ print 'Example of tags: ', df_data['tags'].values[0:5]
 print 'Example of y: ', y[0]
 
 with open('../data/train_data.pkl', 'wb') as outp:
-    start = time.clock()
-    pickle.dump(X, outp)
-    pickle.dump(y, outp)
-    end = time.clock()
+    start = time.clock()         
+    pickle.dump(X, outp)         
+    pickle.dump(y, outp)    
+    end = time.clock()    
     print end-start, "s"
-    outp.close()
-
-del X, y
-
-ltags = df_data['tags'].values
-print 'Example of ltags: ', ltags[0:5]
+    outp.close()        
+                        
+del X, y                
+                        
+ltags = df_data['tags'].values          
+print 'Example of ltags: ', ltags[0:5]  
 with open('../data/ltags_data.pkl', 'wb') as outp:
-    pickle.dump(ltags, outp)
-    start = time.clock()
-    end = time.clock()
-    print end-start, "s"
-    outp.close()
-
-del df_data, ltags
-
+    pickle.dump(ltags, outp)    
+    start = time.clock()    
+    end = time.clock()    
+    print end-start, "s"    
+    outp.close()        
+                        
+del df_data, ltags      
+                        
 with open('../data/dict_data.pkl', 'wb') as outp:
     start = time.clock()
     pickle.dump(word2id, outp)
     pickle.dump(id2word, outp)
     pickle.dump(tag2id, outp)
     pickle.dump(id2tag, outp)
-    end = time.clock()
+    end = time.clock()  
     print end-start, "s"
     outp.close()
 

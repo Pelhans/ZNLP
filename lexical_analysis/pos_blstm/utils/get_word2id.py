@@ -11,7 +11,13 @@ import pickle
 from tqdm import tqdm
 from itertools import chain
 
-file = "train_pos.txt" if len(sys.argv)==1 else sys.argv[1]
+file = "train_pos.txt" 
+get_ltags = "no_ltags"
+
+if len(sys.argv) > 1:
+    get_ltags = sys.argv[1]
+    if len(sys.argv) > 2:
+        file = sys.argv[2]
 
 with open("../data/" + str(file), "rb") as inp:
     texts = inp.read().decode('utf-8')
@@ -83,55 +89,19 @@ tag_ids = range(len(tags))
 
 #构建words 和 tags都转为id的映射
 word2id = pd.Series(set_ids, index=set_words)
-id2word = pd.Series(set_words, index = set_ids)
-tag2id = pd.Series(tag_ids, index = tags)
-id2tag = pd.Series(tags, index = tag_ids)
+ltags = df_data['tags'].values          
 vocab_size = len(set_words)
+
 print 'vocab_size={}'.format(vocab_size)
-
-max_len = 50
-def X_padding(words):
-    #把words转为id形式，并自动补全为max_len长度
-    ids = list(word2id[words])
-    if len(ids) >= max_len:
-        return ids[:max_len]
-    ids.extend([0]*(max_len - len(ids)))
-    return ids
-
-def y_padding(tags):
-    #把tag转为id形式，并自动补全为max_len长度
-    ids = list(tag2id[tags])
-    if len(ids) >= max_len:
-        return ids[:max_len]
-    ids.extend([0]*(max_len - len(ids)))
-    return ids
-
-start = time.clock()
-df_data['X'] = df_data['words'].apply(X_padding)
-df_data['y'] = df_data['tags'].apply(y_padding)
-end = time.clock()
-print end-start, " s"
-
-X = np.asarray(list(df_data['X'].values))
-y = np.asarray(list(df_data['y'].values))
-ltags = df_data['tags'].values
-print 'X.shape={}, y.shape={}'.format(X.shape, y.shape)
-print 'Example of words: ', df_data['words'].values[0]
-print 'Example of X: ', X[0]
-print 'Example of tags: ', df_data['tags'].values[0:5]
 print 'Example of ltags: ', ltags[0:5]
-print 'Example of y: ', y[0]
-print 'Eaxmple of ltags: ', ltags[0], ltags.shape
+print 'Example of words: ', df_data['words'].values[0]
 
-with open('../data/data.pkl', 'wb') as outp:
+with open('../data/word2id.pkl', 'wb') as outp:
     start = time.clock()
-    pickle.dump(X, outp)
-    pickle.dump(y, outp)
-    pickle.dump(ltags, outp)
     pickle.dump(word2id, outp)
-    pickle.dump(id2word, outp)
-    pickle.dump(tag2id, outp)
-    pickle.dump(id2tag, outp)
+    if get_ltags == "ltags":
+        pickle.dump(ltags, outp)
     end = time.clock()
-    print end-start
+    print end-start, "s" 
+
 print 'Finished saving data....'
