@@ -111,24 +111,41 @@ print end-start
 
 X = np.asarray(list(df_data['X'].values))
 y = np.asarray(list(df_data['y'].values))
-ltags = df_data['tags'].values
 print 'X.shape={}, y.shape={}'.format(X.shape, y.shape)
 print 'Example of words: ', df_data['words'].values[0]
 print 'Example of X: ', X[0]
 print 'Example of tags: ', df_data['tags'].values[0:5]
-print 'Example of ltags: ', ltags[0:5]
 print 'Example of y: ', y[0]
-print 'Eaxmple of ltags: ', ltags[0], ltags.shape
 
-with open('../data/data.pkl', 'wb') as outp:
+with open('../data/train_data.pkl', 'wb') as outp:
     start = time.clock()
     pickle.dump(X, outp)
     pickle.dump(y, outp)
+    end = time.clock()
+    print end-start, "s"
+    outp.close()
+
+del X, y
+
+ltags = df_data['tags'].values
+print 'Example of ltags: ', ltags[0:5]
+with open('../data/ltags_data.pkl', 'wb') as outp:
     pickle.dump(ltags, outp)
+    start = time.clock()
+    end = time.clock()
+    print end-start, "s"
+    outp.close()
+
+del df_data, ltags
+
+with open('../data/dict_data.pkl', 'wb') as outp:
+    start = time.clock()
     pickle.dump(word2id, outp)
     pickle.dump(id2word, outp)
     pickle.dump(tag2id, outp)
     pickle.dump(id2tag, outp)
     end = time.clock()
     print end-start, "s"
+    outp.close()
+
 print 'Finished saving data....'

@@ -1,1 +1,1 @@
-sudo pip install pandas numpy tqdm sklearn
+sudo pip install pandas numpy tqdm sklearn networkx jieba

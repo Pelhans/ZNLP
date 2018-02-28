@@ -185,9 +185,10 @@ def main():
     config.gpu_options.allow_growth = True
     
     with tf.Session(config=config) as sess:
-        with open('../data/data.pkl', 'rb') as inp:
+        with open('../data/train_data.pkl', 'rb') as inp:
             X = pickle.load(inp)
             y = pickle.load(inp)
+        with open('../data/dict_data.pkl', 'rb') as inp:
             word2id = pickle.load(inp)
             id2word = pickle.load(inp)
             tag2id = pickle.load(inp)

@@ -120,7 +120,7 @@ def simple_cut(text, sen_words, word2id, model, zy, len_sen):
         return []
 
 
-def cut_word(sentence, word2id, model, zy, batch_size):
+def cut_word(sentence, word2id, model, zy, batch_size=128):
     """首先将一个sentence根据标点和英文符号/字符串划分成多个片段text，然后对每一个片段分词。"""
     not_cuts = re.compile(u'([0-9\da-zA-Z ]+)|[。，、？！.\.\?,!]')
     result = []
