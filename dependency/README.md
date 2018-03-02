@@ -3,7 +3,7 @@
 ## 项目介绍 
 基于[Chen and Manning](https://cs.stanford.edu/%7Edanqi/papers/emnlp2014.pdf) 论文的一个神经网络依存句法分析工具。框架使用tensorflow。<br>
 项目参考自 [akjindal53244/dependency_parsing_tf](https://github.com/akjindal53244/dependency_parsing_tf) 。感谢原作者<br>
-原项目是用于英文的，这里将其精简并修改为中文的分析器。<br>
+原项目是用于英文的，这里将其修改为中文的分析器, 同时添加了LAS的计算。<br>
 <br>
 ## 依赖
 tensorflow >=1.3, #更低的应该也可以<br>
@@ -34,4 +34,4 @@ Gold原文：<br>
 训练模型： python parser_model.py<br>
 测试模型： python parser_test.py<br>
 ## 其他
-如有问题，可以发邮件联系我:p.zhang1992@gmail.com
+如有问题，可以发邮件联系我:me@pelhans.com
