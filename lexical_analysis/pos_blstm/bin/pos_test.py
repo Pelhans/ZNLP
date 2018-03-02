@@ -64,7 +64,10 @@ def tag_pos(text, sen_words, id2tag, model, len_sen):
         y_pred = []
         text_len = len(text)
 
-        X_batch = np.squeeze(text, axis=(1,))
+        if text_len == 1:
+            X_batch = text[0]
+        else:
+            X_batch = np.squeeze(text, axis=(1,))
         fetches = [model.y_pred]
         feed_dict = {model.X_inputs:X_batch, config.lr:1.0, config.batch_size:len(text), config.keep_prob:1.0}
         _y_pred = model.session.run(fetches, feed_dict)

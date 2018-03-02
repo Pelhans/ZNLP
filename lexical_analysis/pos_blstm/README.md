@@ -13,11 +13,9 @@ bin/pos_test.py用来测试<br>
 
 <br>
 测试结果:<br>
-Epoch training 22564, acc=0.97847, cost=0.0712234, speed=25.8682 s/epoch<br>
+Epoch training 22564, acc=0.975644, cost=0.081708, speed=25.8058 s/epoch<br>
 TEST RESULT:<br>
-Test 1960, acc=0.642802, cost=4.00732<br>
-
-才发现这数字。。。等我改完回来找原因。。。
+Test 1960, acc=0.98525, cost=0.0491332<br>
 
 输入句子测试：
 POS标记结果为: 

@@ -18,9 +18,9 @@ with open("../data/" + str(fname) + "_pos.txt", "rb") as inp:
     texts = inp.read().decode('utf-8')
 sentences = texts.split('\n') #根据换行符对文本进行切分
 
-if file == "dev" or file ==  "test":
+if fname == "dev" or fname ==  "test":
     is_dev = True
-    with open('../data/dict_data.pkl', 'rb') as inp:
+    with open('../data/pkl/dict_data.pkl', 'rb') as inp:
         word2id_train = pickle.load(inp)
 
 def clean(s): #将句子中如开头和中间无匹配的引号去掉

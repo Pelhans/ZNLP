@@ -186,20 +186,18 @@ def main():
 #    sess = tf.Session(config=config)
     with tf.Session(config=config) as sess:
 
-        with open('../data/data.pkl', 'rb') as inp:
+        with open('../data/pkl/train_data.pkl', 'rb') as inp:
             X_train = pickle.load(inp)
             y_train = pickle.load(inp)
     
-        with open('../data/data_valid.pkl', 'rb') as inp1:
+        with open('../data/pkl/dev_data.pkl', 'rb') as inp1:
             X_valid = pickle.load(inp1)
             y_valid = pickle.load(inp1)
     
-        with open('../data/data_test.pkl', 'rb') as inp2:
+        with open('../data/pkl/test_data.pkl', 'rb') as inp2:
             X_test = pickle.load(inp2)
             y_test = pickle.load(inp2)
     
-        #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        #X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train,  test_size=0.2, random_state=42)
         print 'X_train.shape={}, y_train.shape={}; \nX_valid.shape={}, y_valid.shape={};\nX_test.shape={}, y_test.shape={}'.format(
             X_train.shape, y_train.shape, X_valid.shape, y_valid.shape, X_test.shape, y_test.shape)
         print 'Creating the data generator ...'
