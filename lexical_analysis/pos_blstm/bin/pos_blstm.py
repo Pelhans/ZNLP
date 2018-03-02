@@ -185,15 +185,15 @@ def main():
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
 
-    with open('../data/data.pkl', 'rb') as inp:
+    with open('../data/pkl/train_data.pkl', 'rb') as inp:
         X_train = pickle.load(inp)
         y_train = pickle.load(inp)
 
-    with open('../data/data_valid.pkl', 'rb') as inp1:
+    with open('../data/pkl/dev_data.pkl', 'rb') as inp1:
         X_valid = pickle.load(inp1)
         y_valid = pickle.load(inp1)
 
-    with open('../data/data_test.pkl', 'rb') as inp2:
+    with open('../data/pkl/test_data.pkl', 'rb') as inp2:
         X_test = pickle.load(inp2)
         y_test = pickle.load(inp2)
 

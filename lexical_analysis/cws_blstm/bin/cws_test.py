@@ -90,13 +90,14 @@ def text2ids(text, word2id):
     return ids
 
 
-def simple_cut(text, sen_words, word2id, model, zy, len_sen):
+def simple_cut(text, sen_words, model, zy, len_sen):
     """对一个片段text（标点符号把句子划分为多个片段）进行预测。"""
     if text:
         text_len = len(text)
         X_batch = np.squeeze(text, axis=(1,))
         fetches = [model.y_pred]
         feed_dict = {model.X_inputs:X_batch, config.lr:1.0, config.batch_size:len(text), config.keep_prob:1.0}
+        eed_dict = {model.X_inputs:X_batch, config.lr:1.0, config.batch_size:len(text), config.keep_prob:1.0}
         _y_pred = model.session.run(fetches, feed_dict)
         _y_pred = np.squeeze(_y_pred, axis=(0,))
         y_pred = []
@@ -137,10 +138,10 @@ def cut_word(sentence, word2id, model, zy, batch_size=128):
     print "total_sen_num: ", total_sen_num
     if total_sen_num > batch_size:
         for i in range(total_sen_num/batch_size):
-            result.extend(simple_cut(sen_part_ids[i*batch_size:(i+1)*batch_size], sen_part_words[i*batch_size:(i+1)*batch_size], word2id, model, zy, len_sen[i*batch_size:(i+1)*batch_size]))
-        result.extend(simple_cut(sen_part_ids[-total_sen_num%batch_size:], sen_part_words[-total_sen_num%batch_size:], word2id, model, zy, len_sen[-total_sen_num%batch_size:]))
+            result.extend(simple_cut(sen_part_ids[i*batch_size:(i+1)*batch_size], sen_part_words[i*batch_size:(i+1)*batch_size], model, zy, len_sen[i*batch_size:(i+1)*batch_size]))
+        result.extend(simple_cut(sen_part_ids[-total_sen_num%batch_size:], sen_part_words[-total_sen_num%batch_size:], model, zy, len_sen[-total_sen_num%batch_size:]))
     else:
-        result.extend(simple_cut(sen_part_ids, sen_part_words, word2id, model, zy, len_sen))
+        result.extend(simple_cut(sen_part_ids, sen_part_words, model, zy, len_sen))
     return result
 
 def get_zy(ltags):

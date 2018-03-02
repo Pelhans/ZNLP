@@ -141,8 +141,8 @@ del df_data, ltags
 with open('../data/dict_data.pkl', 'wb') as outp:
     start = time.clock()
     pickle.dump(word2id, outp)
-    pickle.dump(id2word, outp)
     pickle.dump(tag2id, outp)
+    pickle.dump(id2word, outp)
     pickle.dump(id2tag, outp)
     end = time.clock()
     print end-start, "s"

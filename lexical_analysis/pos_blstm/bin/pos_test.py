@@ -19,11 +19,9 @@ class ModelLoader(object):
         self.X_inputs =  tf.placeholder(tf.int32, [None, config.timestep_size], name='X_inputs')
         self.y_inputs = tf.placeholder(tf.int32, [None, config.timestep_size], name='y_input')
             
-        with tf.device("/cpu:0"):
-            embedding = tf.get_variable("pos_embedding", [config.vocab_size, config.embedding_size], dtype=tf.float32)
-
         with tf.variable_scope('pos_blstm'):
             self.cost, self.accuracy, self.correct_prediction, self.y_pred = pb.bi_lstm(self.X_inputs, self.y_inputs)
+
         if len(glob.glob(self.ckpt_path + '.data*')) > 0:
             print 'Loading model parameters from %s ' % ckpt_path
             all_vars = tf.global_variables()
@@ -33,18 +31,51 @@ class ModelLoader(object):
             print 'Model not found, creat with fresh parameters....'
             self.session.run(tf.global_variables_initializer())
 
-    def predict(self, model, sentence, word2id, id2tag):
+    def predict(self, model, sentence, word2id, id2tag, batch_size=128):
+        """首先将一个sentence根据标点和英文符号/字符串划分成多个片段text，然后对每一个片段做词性标注。"""
         if sentence:
-            words = list(re.split(" ", sentence))
-            text_len = len(words)
-            X_batch = text2ids(sentence, word2id)
-            fetches = [model.y_pred]
-            feed_dict = {model.X_inputs:X_batch, config.lr:1.0, config.batch_size:1, config.keep_prob:1.0}
-            _y_pred = model.session.run(fetches, feed_dict)[0][:text_len]
-            y_pred = tf.cast(tf.argmax(_y_pred, 1), tf.int32)
-            l_tmp = list(model.session.run(y_pred))
-            tags = list(id2tag[l_tmp])
-            return zip(words, tags)
+            not_cuts = re.compile(u'([0-9\da-zA-Z]+)|[。，、？！.\.\?,!]')
+           
+            result = []
+            sen_part_words = []
+            sen_part_ids = []
+            len_sen = []
+            start = 0
+
+            for seg_sign in not_cuts.finditer(sentence):
+                sen_part_ids.append(text2ids(sentence[start:seg_sign.end()].strip(), word2id))
+                sen_part_words.append(re.split(" ", sentence[start:seg_sign.end()].strip()))
+                len_sen.append(len(re.split(" ", sentence[start:seg_sign.end()].strip())))
+                start = seg_sign.end()
+
+            total_sen_num = len(sen_part_words)
+            print "total_sen_num: ", total_sen_num
+
+            if total_sen_num > batch_size:
+                for i in range(total_sen_num/batch_size):
+                    result.extend(tag_pos(sen_part_ids[i*batch_size:(i+1)*batch_size], sen_part_words[i*batch_size:(i+1)*batch_size], id2tag, model, len_sen[i*batch_size:(i+1)*batch_size]))
+                result.extend(tag_pos(sen_part_ids[-total_sen_num%batch_size:], sen_part_words[-total_sen_num%batch_size:], id2tag, model, len_sen[-total_sen_num%batch_size:]))
+            else:
+                result.extend(tag_pos(sen_part_ids, sen_part_words, id2tag, model, len_sen))
+            return result
+
+def tag_pos(text, sen_words, id2tag, model, len_sen):
+    if text:
+        y_pred = []
+        text_len = len(text)
+
+        X_batch = np.squeeze(text, axis=(1,))
+        fetches = [model.y_pred]
+        feed_dict = {model.X_inputs:X_batch, config.lr:1.0, config.batch_size:len(text), config.keep_prob:1.0}
+        _y_pred = model.session.run(fetches, feed_dict)
+        _y_pred = np.squeeze(_y_pred, axis=(0,))
+        for i in range(text_len):
+            y_pred.append(tf.cast(tf.argmax(_y_pred[i*config.max_len:i*config.max_len + len_sen[i]], 1), tf.int32))
+        l_tmp = list(model.session.run(y_pred))
+        tags = [list(id2tag[t_tmp]) for t_tmp in l_tmp]
+
+        return zip(sen_words, tags)
+
 
 
 def text2ids(sentence, word2id):
@@ -58,27 +89,30 @@ def text2ids(sentence, word2id):
     ids = np.asarray(ids).reshape([-1, config.max_len])
     return ids
 
+def show_result(tags):
+    str = ''
+    for (w, t) in tags:
+        for i in range(len(t)):
+            str += u'%s/%s '%(w[i], t[i])
+    print "POS标记结果为: \n", str
+
 def main():
+
     ckpt_path = '../ckpt/bi-lstm.ckpt-6'
     model = ModelLoader(ckpt_path)
 
-    with open('../data/data.pkl', 'rb') as inp:
-        X = pickle.load(inp)
-        y = pickle.load(inp)
-        ltags = pickle.load(inp)
+    start = time.clock()
+    with open('../data/pkl/dict_data.pkl', 'rb') as inp:
         word2id = pickle.load(inp)
         id2word = pickle.load(inp)
         tag2id = pickle.load(inp)
         id2tag = pickle.load(inp)
-
-    sentence = u'词法 分析 终于 完成 了 。'
+    
+    sentence = u'词法 分析 终于 完成 了 。 这 都 叫 啥 事 啊 。'
     tagging = model.predict(model, sentence, word2id, id2tag)
-
-    str = ''
-    for (w, t) in tagging:
-        str += u'%s/%s '%(w, t)
-    print "POS标记结果为:"
-    print str
+    
+    show_result(tagging)
+    print start - time.clock() , " s"
 
 if __name__ == '__main__':
     main()
