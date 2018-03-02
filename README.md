@@ -18,7 +18,11 @@ git clone https://github.com/Pelhans/ZNLP
 -pandas<br>
 -numpy<br>
 -tqdm<br>
-以上几项均通过pip 安装即可，目前仅支持python2<br>
+sklearn<br>
+scipy<br>
+networkx(textrank需要)<br>
+jieba(textrank可选)<br>
+以上几项均通过pip 安装或运行./requirement.sh，目前仅支持python2<br>
 
 ## 模块
 计划包含以下模块，其中CWS/POS/NER有时间会升级到CNN+BLSTM+CRF模型：<br>
