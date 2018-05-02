@@ -21,6 +21,7 @@ from parser_model import ParserModel
 
 
 ckpt_path = tf.train.latest_checkpoint(os.path.join(DataConfig.data_dir_path, DataConfig.model_dir))
+#ckpt_path = tf.train.latest_checkpoint(   )
 
 def highlight_string(temp):
     print 80 * "="
@@ -28,7 +29,7 @@ def highlight_string(temp):
     print 80 * "="
 
 class ParserLoader(object):
-    def __init__(self, ckpt_path, word, pos):
+    def __init__(self, word, pos, ckpt_path = ckpt_path):
         self.sess = tf.Session()
         self.ckpt_path = ckpt_path
         self.list_word = word
@@ -79,7 +80,8 @@ def main():
 
     word = [u"世界", u"第", u"八", u"大", u"奇迹", u"出现"]
     pos = [u"n",u"m",u"m",u"a",u"n",u"v"]
-    parser = ParserLoader(ckpt_path, word, pos)
+#    parser = ParserLoader(ckpt_path, word, pos)
+    parser = ParserLoader( word, pos)
     UAS, LAS, token_num, token_dep =  parser.predict(parser.model, parser.dataset)
     parser.print_conll(token_num, token_dep)
 

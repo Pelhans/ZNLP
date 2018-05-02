@@ -2,7 +2,11 @@ import os
 import numpy as np
 import datetime
 from enum import Enum
+
+path = os.path.split(os.path.realpath(__file__))[0]
+
 from general_utils import get_pickle, dump_pickle, get_vocab_dict
+
 
 NULL = "<null>"
 UNK = "<unk>"
@@ -17,7 +21,7 @@ today_date = str(datetime.datetime.now().date())
 
 class DataConfig:  # data, embedding, model path etc.
     # Data Paths
-    data_dir_path = "../data"
+    data_dir_path = path + "/../data"
     train_path = "train.conll"
     valid_path = "dev.conll"
     test_path = "test.conll"
@@ -35,7 +39,7 @@ class DataConfig:  # data, embedding, model path etc.
     test_summ_dir = "valid_summaries"
 
     # dump - vocab
-    dump_dir = "../data/pkl"
+    dump_dir = path + "/../data/pkl"
     word_vocab_file = "word2idx.pkl"
     pos_vocab_file = "pos2idx.pkl"
     dep_vocab_file = "dep2idx.pkl"
