@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/bin/bash 
+
+# gen train data
+
 head train_fpos.txt -n 15677  > train_post.txt;
 tail train_fpos.txt -n 3918 > dev_post.txt;
 cp train_fpost.txt train_pos.txt;

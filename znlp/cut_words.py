@@ -2,14 +2,17 @@
 # coding=utf-8
 
 import re
-import time, sys
+import time, sys,os
 import glob
 import pickle
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import cws_blstm as cb
 from sklearn.model_selection import train_test_split
+
+path = os.path.split(os.path.realpath(__file__))[0]
+sys.path.append(path + r'/../lexical_analysis/cws_blstm/bin/')
+import cws_blstm as cb
 
 """
 Please use the command like "python cws_test.py 512 not_get_zy".
@@ -18,13 +21,13 @@ batch_size control the nums of sentences you process in one batch and not_get_zy
 
 
 config = cb.config_ch()
-batch_size = 128
-wget_zy = 'not_get_zy'
-if len(sys.argv) == 1:
-    print "Using default config. batch_size = 128 and not_get_zy."
-elif len(sys.argv) == 3:
-    batch_size = sys.argv[1]
-    wget_zy = sys.argv[2]
+#batch_size = 128
+#wget_zy = 'not_get_zy'
+#if len(sys.argv) == 1:
+#    print "Using default config. batch_size = 128 and not_get_zy."
+#elif len(sys.argv) == 3:
+#    batch_size = sys.argv[1]
+#    wget_zy = sys.argv[2]
 
 class ModelLoader(object):
     def __init__(self,ckpt_path):
@@ -189,26 +192,13 @@ def show_result(result):
         rss = rss + each + ' / '
     print rss
 
-
 def main():
-    ckpt_path = '../ckpt/bi-lstm.ckpt-6'
-    model = ModelLoader(ckpt_path)
-
-    with open('../data/word2id.pkl', 'rb') as inp:
-        word2id = pickle.load(inp)
-        if wget_zy == "get_zy":
-            ltags = pickle.load(inp)
-
-    if wget_zy == "get_zy":
-        get_zy(ltags)  #这行用来生成转移概率的pkl文件，一次生成后就可以注释掉了
-    
-    with open('../data/zy.pkl', 'rb') as inp:
-        zy = pickle.load(inp)
 
     sentence = u'人们思考问题往往不是从零开始的。就好像你现在阅读这篇文章一样，你对每个词的理解都会依赖于你前面看到的一些词，\
       而不是把你前面看的内容全部抛弃了，忘记了，再去理解这个单词。也就是说，人们的思维总是会有延续性的。'
     start = time.clock()
-    result = cut_word(sentence ,word2id ,model, zy, batch_size)
+    mcws = zcws()
+    result = mcws.zcws_cut(sentence)
     show_result(result)
     print time.clock() - start, "s"
 

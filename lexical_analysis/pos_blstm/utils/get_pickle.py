@@ -11,6 +11,9 @@ import pickle
 from tqdm import tqdm
 from itertools import chain
 
+# 生成train / dev/ test 的pkl文件，如 python get_pickle dev
+
+
 is_dev = False
 fname = "train" if len(sys.argv)==1 else sys.argv[1]
 

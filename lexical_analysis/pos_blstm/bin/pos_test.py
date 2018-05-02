@@ -115,7 +115,7 @@ def main():
     tagging = model.predict(model, sentence, word2id, id2tag)
     
     show_result(tagging)
-    print start - time.clock() , " s"
+    print time.clock() - start , " s"
 
 if __name__ == '__main__':
     main()
