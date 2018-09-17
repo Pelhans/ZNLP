@@ -1,0 +1,5 @@
+*.txt
+*.pkl
+lexical_analysis/crfpos++/people-daily.txt
+lexical_analysis/crfpos++/*.rst
+lexical_analysis/crfpos++/*.data
