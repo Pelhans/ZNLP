@@ -105,6 +105,7 @@ def X_padding(words):
 
 def y_padding(tags):
     #把tag转为id形式，并自动补全为max_len长度
+    print "tags: ", tag2id[tags]
     ids = list(tag2id[tags])
     if len(ids) >= max_len:
         return ids[:max_len]
