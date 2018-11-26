@@ -33,7 +33,7 @@ class Model(object):
     def bi_lstm(self, X_inputs, y_inputs):
         """build the bi-LSTMs network. Return the y_pred"""
         # X_inputs.shape = [batchsize, timestep_size]  ->  inputs.shape = [batchsize, timestep_size, embedding_size]
-        embedding = tf.get_variable("ner_embedding", [self.cfg.getint('net_work', 'vocab_size'), self.cfg.getint('net_work', 'embedding_size')], dtype=tf.float32)
+        embedding = tf.get_variable("embedding", [self.cfg.getint('net_work', 'vocab_size'), self.cfg.getint('net_work', 'embedding_size')], dtype=tf.float32)
         inputs = tf.nn.embedding_lookup(embedding, X_inputs)  
     
         # ** 1.构建前向后向多层 LSTM
@@ -82,7 +82,7 @@ class Model(object):
             cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.reshape(y_inputs, [-1]), logits = y_pred))
             return cost, accuracy, correct_prediction, y_pred
     
-    def run(self, dataset, sess, accuracy, cost, train_op, X_inputs, y_inputs, _batch_size, training=False):
+    def run(self, dataset, sess, accuracy, cost, train_op, X_inputs, y_inputs, _batch_size, _lr, training=False):
         """Run total dataset"""
         fetches = [accuracy, cost, train_op] if training else [accuracy, cost]
         keep_prob = self.cfg.getfloat('net_work', 'keep_prob') if training else 1.0
@@ -94,7 +94,7 @@ class Model(object):
     
         for i in xrange(batch_num):
             X_batch, y_batch = dataset.next_batch(_batch_size)
-            feed_dict = {X_inputs:X_batch, y_inputs:y_batch, self.lr: self.cfg.getfloat('net_work', 'lr'), self.batch_size:_batch_size, self.keep_prob:keep_prob}
+            feed_dict = {X_inputs:X_batch, y_inputs:y_batch, self.lr: _lr, self.batch_size:_batch_size, self.keep_prob:keep_prob}
             result = sess.run(fetches, feed_dict)
             _acc += result[0]
             _cost += result[1]

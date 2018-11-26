@@ -15,7 +15,6 @@ from tensorflow.contrib import rnn
 from sklearn.model_selection import train_test_split
 from model.net_work import Model
 from model.get_data import BatchGenerator
-from model.run_epoch import run
 import argparse
 from configparser import ConfigParser
 
@@ -27,6 +26,7 @@ args = parser.parse_args()
 cfg = ConfigParser()
 cfg.read(u'conf/' + args.taskName + '_conf.ini')
 print (cfg.get('file_path', 'train'))
+
 def train():
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
@@ -81,17 +81,17 @@ def train():
             print('EPOCH %d， lr=%g' % (epoch+1, _lr))
             start_time = time.time()
             train_cost = train_acc = valid_acc = valid_cost = 0.0
-            train_acc, train_cost = model.run(data_train, sess, accuracy, cost, train_op,  X_inputs, y_inputs,  tr_batch_size, training=True)
+            train_acc, train_cost = model.run(data_train, sess, accuracy, cost, train_op,  X_inputs, y_inputs,  tr_batch_size, _lr, training=True)
             valid_acc, valid_cost = model.run(data_valid, sess,
-                                                accuracy, cost, train_op, X_inputs, y_inputs, tr_batch_size)
+                                                accuracy, cost, train_op, X_inputs, y_inputs, tr_batch_size, 0.0)
             print('\tEpoch 1: training acc=%g, cost=%g;  valid acc= %g, cost=%g speed=%g s/epoch'\
                           % (train_acc, train_cost, valid_acc, valid_cost, time.time()-start_time))
-            if (epoch + 1) % 3 == 0:  # 每 3 个 epoch 保存一次模型
+            if (epoch + 1) % 3 == 0:
                 save_path = saver.save(sess, cfg.get('file_path', 'model'), global_step=(epoch+1))
                 print('the save path is ', save_path)
         # testing
         print('**TEST RESULT:')
-        test_acc, test_cost = model.run(data_test, sess, accuracy, cost, train_op, X_inputs, y_inputs, tr_batch_size)
+        test_acc, test_cost = model.run(data_test, sess, accuracy, cost, train_op, X_inputs, y_inputs, tr_batch_size, 0.0)
         print('**Test %d, acc=%g, cost=%g' % (data_test.y.shape[0], test_acc, test_cost))
 
 if __name__ == "__main__":

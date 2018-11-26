@@ -1,6 +1,8 @@
 *.txt
 *.pkl
 *.pyc
+*bi-lstm.ckpt-6*
+*checkpoint
 lexical_analysis/crfpos++/people-daily.txt
 lexical_analysis/crfpos++/*.rst
 lexical_analysis/crfpos++/*.data

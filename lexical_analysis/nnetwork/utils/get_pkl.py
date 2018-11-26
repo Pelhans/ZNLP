@@ -2,6 +2,7 @@
 # coding=utf-8
 
 import os
+import time
 import pickle
 import numpy as np
 import pandas as pd
@@ -85,6 +86,43 @@ def text_to_ids(df_data, word2id, tag2id):
 def read_list(list_str):
     return [i for i in list_str.split("'") if i not in ["[", "]", ",", ", "]]
 
+def get_zy(ltags):
+    A = {
+        'sb': 0,
+        'ss': 0,
+        'be': 0,
+        'bm': 0,
+        'me': 0,
+        'mm': 0,
+        'eb': 0,
+        'es': 0
+    }
+    zy = dict()
+    for label in ltags:
+        for t in xrange(len(label) -1):
+            key = label[t] + label[t+1]
+            A[key] += 1.0
+
+    zy['sb'] = A['sb'] / (A['sb'] + A['ss'])
+    zy['ss'] = 1.0 - zy['sb']
+    zy['be'] = A['be'] / (A['be'] + A['bm'])
+    zy['bm'] = 1.0 - zy['be']
+    zy['me'] = A['me'] / (A['me'] + A['mm'])
+    zy['mm'] = 1.0 - zy['me']
+    zy['eb'] = A['eb'] / (A['eb'] + A['es'])
+    zy['es'] = 1.0 - zy['eb']
+    keys = sorted(zy.keys())
+    print 'the transition probability: '
+    for key in keys:
+        print key, zy[key]
+    
+    zy = {i:np.log(zy[i]) for i in zy.keys()}
+    start_time = time.clock()
+    with open ('../data/cws/pkl/zy.pkl', 'wb') as outp:
+        pickle.dump(zy, outp)
+    end_time = time.clock()
+    print start_time - end_time
+
 def save_data(data_type, X, y):
     with open(cfg.get('get_pkl', 'pkl_path') + data_type + "_data.pkl" , "wb") as outp:
         pickle.dump(X, outp)
@@ -108,5 +146,7 @@ if __name__ == '__main__':
         if filename == "train":
             word2id, id2word, tag2id, id2tag = build_dict(df_data)
             save_dict(word2id, id2word, tag2id, id2tag)
+            if args.taskName == 'cws':
+                get_zy(df_data['tags'].values) # Cal the transfer probability
         X, y = text_to_ids(df_data, word2id, tag2id)
         save_data(filename, X, y)
