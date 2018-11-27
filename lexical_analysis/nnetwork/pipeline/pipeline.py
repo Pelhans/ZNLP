@@ -35,7 +35,7 @@ class Pipeline(object):
 
         #cws
         cws_tag = self.cws_model.predict(sentence ,word2id , id2tag)
-        cws_str = self.merge_cws(cws_tag)
+        cws_str = merge_cws(cws_tag)
 
         #pos
         pos_tagging = self.pos_model.predict(cws_str, word2id_p, id2tag_p)
@@ -44,24 +44,24 @@ class Pipeline(object):
         ner_tagging = self.ner_model.predict(cws_str, word2id_n, id2tag_n)
         return cws_str, pos_tagging, ner_tagging
 
-    def merge_cws(self, cws_tag):
-        words = []
-        tmp = []
-        rss = ''
-        for (w, t) in cws_tag:
-            for i in range(len(t)):
-                if t[i] in ['s', 'n']:
-                    words.append(w[i])
-                else:
-                    tmp.extend(w[i])
-                    if t[i] == 'e':
-                        words.append(tmp)
-                        tmp = []
-        for each in words:
-            if isinstance(each, list):
-                each = "".join(each)
-            rss += each + ' '
-        return rss
+def merge_cws(cws_tag):
+    words = []
+    tmp = []
+    rss = ''
+    for (w, t) in cws_tag:
+        for i in range(len(t)):
+            if t[i] in ['s', 'n']:
+                words.append(w[i])
+            else:
+                tmp.extend(w[i])
+                if t[i] == 'e':
+                    words.append(tmp)
+                    tmp = []
+    for each in words:
+        if isinstance(each, list):
+            each = "".join(each)
+        rss += each + ' '
+    return rss
 
 def main():
 

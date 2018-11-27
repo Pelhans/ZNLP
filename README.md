@@ -37,28 +37,39 @@ jieba(textrank可选)<br>
 ## 使用
 单个模块的训练请参考对应文件夹下面的README.md，下面对各个模块的调用做一个说明：    
 ### 分词模块
-from znlp import cws    
-    
-sentence = u'们思考问题往往不是从零开始的。就好像你现在阅读这篇文章一样。'    
-cws.load_Model()    
-result = cws.cut(sentence)    
-cws.show(result)    
 
+from znlp.loadModel import LoadModel    
+from znlp.loadModel import show_cws, show_pos    
+sentence = u'人们思考问题往往不是从零开始的。就好像你现在阅读这篇文章一样。'    
+cws = LoadModel('cws')    
+result = cws.predict(sentence)    
+show_cws(result)    
+
+结果：    
+人们 思考 问题 往往 不是 从 零 开始 的 。 就 像 你 好现在 阅读 这 篇 文章 一样 。
 ### 词性标注模块
-from znlp import pos    
+from znlp.loadModel import LoadModel    
+from znlp.loadModel import show_cws, show_pos    
     
 sentence = u'词法 分析 终于 完成 了 。 这 都 叫 啥 事 啊 。'    
-pos.load_Model()    
-result = pos.ptag(sentence)    
-pos.show_result(result)    
-    
+pos = LoadModel('pos')     
+result = pos.predict(sentence)    
+show_pos(result)    
+
+结果：    
+词法/l 分析/v 终于/d 完成/v 了/y 。/w 这/r 都/d 叫/v 啥/r 事/n 啊/y 。/w
+
 ### 命名实体识别
-from znlp import ner     
+from znlp.loadModel import LoadModel    
+from znlp.loadModel import show_cws, show_pos    
     
 sentence = u'我 爱 吃 北京 烤鸭 。'    
-ner.load_Model()    
-result = ner.ptag(sentence)    
-ner.show_result(result)    
+ner = LoadModel('ner')    
+result = ner.predict(sentence)    
+show_pos(result)    
+
+结果：    
+我/nan 爱/nan 吃/nan 北京/nt 烤鸭/nan 。/nan
 
 ### 依存句法分析
 from znlp import dparser
@@ -68,11 +79,6 @@ pos = [u"n",u"m",u"m",u"a",u"n",u"v"]
 parser = dparser.ParserLoader( word, pos)    
 UAS, LAS, token_num, token_dep =  parser.predict(parser.model, parser.dataset)    
 parser.print_conll(token_num, token_dep)    
-
-### 关键词提取
-
-具体调用请参见 textKeywords/example/example01.py
-
 
 ## 其他
 如有问题，可以发邮件联系我:me@pelhans.com

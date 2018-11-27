@@ -1,1 +1,8 @@
-sudo pip install pandas numpy tqdm sklearn networkx jieba scipy
+tensorflow>=1.3
+pandas
+numpy 
+tqdm 
+sklearn
+networkx
+jieba
+scipy
