@@ -8,24 +8,15 @@ import time
 import get_pickle
 import numpy as np
 import tensorflow as tf
-from tensorflow.contrib import rnn
-from sklearn.model_selection import train_test_split
+from configparser import ConfigParser
+
+#cfg = ConfigParser()
+#cfg.read(u'conf/ner_conf.ini')
 
 path = os.path.split(os.path.realpath(__file__))[0]
-sys.path.append(path + r'/../../lexical_analysis/cws_blstm/bin/') 
-sys.path.append(path + r'/../../lexical_analysis/ner_blstm/bin/') 
-sys.path.append(path + r'/../../lexical_analysis/pos_blstm/bin/') 
-
-#sys.path.append(r'../cws_blstm/bin/') 
-#sys.path.append(r'../ner_blstm/bin/') 
-#sys.path.append(r'../pos_blstm/bin/') 
-import cws_test as ct
-import ner_test as nt
-import pos_test as pt
-
-cws_path = path + '/../../lexical_analysis/cws_blstm/'
-ner_path = path + '/../../lexical_analysis/ner_blstm/'
-pos_path = path + '/../../lexical_analysis/pos_blstm/'
+sys.path.append(path + r'/../')
+from predict import ModelLoader
+from predict import show_result
 
 class Pipeline(object):
     def __init__(self):
@@ -33,9 +24,9 @@ class Pipeline(object):
         self.session = tf.Session()
         print("Loading pipeline modules...")
 
-        self.cws_model = ct.ModelLoader(cws_path + 'ckpt/bi-lstm.ckpt-6')
-        self.ner_model = nt.ModelLoader(ner_path + 'ckpt/bi-lstm.ckpt-6')
-        self.pos_model = pt.ModelLoader(pos_path+ 'ckpt/bi-lstm.ckpt-6')
+        self.cws_model = ModelLoader(r'../ckpt/cws/bi-lstm.ckpt-6', 'cws')
+        self.pos_model = ModelLoader(r'../ckpt/pos/bi-lstm.ckpt-6', 'pos')
+        self.ner_model = ModelLoader(r'../ckpt/ner/bi-lstm.ckpt-6', 'ner')
 
     def analyze(self, sentence, word2id, id2tag, zy, word2id_p, id2tag_p, word2id_n, id2tag_n):
         '''
@@ -43,33 +34,46 @@ class Pipeline(object):
         '''
 
         #cws
-        cws_tag = ct.cut_word(sentence ,word2id ,self.cws_model, zy)
-        cws_str = " ".join(cws_tag)
+        cws_tag = self.cws_model.predict(sentence ,word2id , id2tag)
+        cws_str = self.merge_cws(cws_tag)
 
         #pos
-        pos_tagging = self.pos_model.predict(self.pos_model, cws_str, word2id_p, id2tag_p)
+        pos_tagging = self.pos_model.predict(cws_str, word2id_p, id2tag_p)
 
         #ner
-        ner_tagging = self.ner_model.predict(self.ner_model, cws_str, word2id_n, id2tag_n)
+        ner_tagging = self.ner_model.predict(cws_str, word2id_n, id2tag_n)
         return cws_str, pos_tagging, ner_tagging
 
-def get_sen(tagging):
-    str = ''
-    for (w, t) in tagging:
-        str += u'%s/%s '%(w, t)
-    return str
+    def merge_cws(self, cws_tag):
+        words = []
+        tmp = []
+        rss = ''
+        for (w, t) in cws_tag:
+            for i in range(len(t)):
+                if t[i] in ['s', 'n']:
+                    words.append(w[i])
+                else:
+                    tmp.extend(w[i])
+                    if t[i] == 'e':
+                        words.append(tmp)
+                        tmp = []
+        for each in words:
+            if isinstance(each, list):
+                each = "".join(each)
+            rss += each + ' '
+        return rss
 
 def main():
 
     word2id_c, id2tag_c, word2id_p, id2tag_p, word2id_n, id2tag_n, zy = get_pickle.get_pickle()
 
     pipe = Pipeline()
-    #sentence = u'我爱吃北京烤鸭。'
-    sentence = raw_input("请您输入一句话：").strip().decode(sys.stdin.encoding or locale.getpreferredencoding(True))
+    sentence = u'我爱吃北京烤鸭。我爱中华人民共和国。'
+#    sentence = raw_input("请您输入一句话：").strip().decode(sys.stdin.encoding or locale.getpreferredencoding(True))
     cws, pos, ner = pipe.analyze(sentence, word2id_c, id2tag_c, zy, word2id_p, id2tag_p, word2id_n, id2tag_n)
 
-    pos_sen = get_sen(pos)
-    ner_sen = get_sen(ner)
+    pos_sen = show_result(pos)
+    ner_sen = show_result(ner)
    
     print "您输入的句子为：", sentence
     print "分词结果为：", cws
